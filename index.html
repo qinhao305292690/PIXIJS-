@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>飞机大战</title>
+  <script src="./pixi.js"></script>
+  <style type="text/css">
+    canvas {
+      margin-left: 37%;
+    }
+
+  </style>
+
+</head>
+<body>
+<script type="text/javascript">
+  //创建应用
+  var app = new PIXI.Application(512, 768);
+  //绑定应用到浏览器
+  document.body.appendChild(app.view);
+  var bg = PIXI.Sprite.fromImage("./images/1.jpg");
+  app.stage.addChild(bg);
+  bg.y = -768;
+
+  function step() {
+
+    bg.y += 1;
+    console.log(bg.y);
+    if (bg.y == 0) {
+      bg.y = -768;
+    }
+
+  }
+
+  var enemys = [];
+
+  for (var i = 0; i < 8; i++) {
+    //添加敌机图片
+    var enemy = PIXI.Sprite.fromImage("./images/enemy_04.png");
+    //将图片加入舞台
+    app.stage.addChild(enemy);
+    //设置初始位置
+    enemy.x = 70 * i;
+    enemy.y = 100;
+    //设置中心点
+    enemy.anchor.set(0.5, 0.5);
+
+    enemys.push(enemy);
+  }
+
+  //添加玩家飞机图片
+  var plane = PIXI.Sprite.fromImage("./images/plane_blue_01.png");
+  //将图片加入舞台
+  app.stage.addChild(plane);
+  //设置初始位置
+  plane.x = 200;
+  plane.y = 500;
+  //设置中心点
+  plane.anchor.set(0.5, 0.5);
+
+  //将舞台的交互打开
+  app.stage.interactive = true;
+  //这里注册鼠标的点击事件
+  app.stage.on('mousemove', onMove);
+  app.stage.on('touchmove', onMove);
+
+  function onMove(event) {
+    //获取一下当前的坐标点
+    var pos = event.data.getLocalPosition(app.stage);
+    //修改飞机位置
+    plane.x = pos.x;
+    plane.y = pos.y;
+  }
+
+  /*
+   #######################
+       均匀发射子弹
+   ######################
+   */
+  var bulletArr = [];
+
+  var fireTime = 0;
+  var fireSubTime = 5;
+
+  function fire() {
+    if (fireTime == 0) {
+
+      //添加子弹图片
+      var bullet = PIXI.Sprite.fromImage("./images/bullet_02.png");
+      //将图片加入舞台
+      app.stage.addChild(bullet);
+      //设置位置
+      bullet.y = plane.y;
+      bullet.x = plane.x;
+      //设置中心点
+      bullet.anchor.set(0.5, 0.5);
+
+      //将子弹图片添加到子弹数组中
+      bulletArr.push(bullet);
+
+      fireTime = fireSubTime;
+
+    }
+    fireTime--;
+  }
+
+  //场景绑定帧频函数
+  app.ticker.add(animate);
+
+  //添加帧频函数
+  function animate() {
+    step();
+    fire();
+    //函数调用
+    enemyMove();
+
+    //函数调用
+    bulletMove();
+
+    //函数调用
+    bulletCrash();
+  }
+
+  //函数－敌机移动
+  function enemyMove() {
+    for (var i = 0; i < 8; i++) {
+      var enemy = enemys[i];
+      enemy.y += 4;
+      if (enemy.y > 800) {
+        enemy.y = -100;
+      }
+    }
+  }
+
+  //函数－子弹移动
+  function bulletMove() {
+    for (var i = 0; i < bulletArr.length; i++) {
+      var bullet = bulletArr[i];
+      bullet.y -= 30;
+    }
+  }
+
+  //函数－子弹碰撞敌机
+  function bulletCrash() {
+    for (var j = 0; j < bulletArr.length; j++) {
+      var bullet = bulletArr[j];
+      for (var i = 0; i < 8; i++) {
+        var enemy = enemys[i];
+        var pos = (bullet.x - enemy.x) * (bullet.x - enemy.x) + (bullet.y - enemy.y) * (bullet.y - enemy.y);
+        if (pos < 60 * 60) {//碰撞
+          enemy.y = -100;
+        }
+      }
+    }
+  }
+
+
+</script>
+</body>
+</html>
